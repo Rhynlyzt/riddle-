@@ -5,121 +5,178 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Random Riddle</title>
   <style>
+  
     body {
-    font-family: Arial, sans-serif;
-    background-image: url('https://i.ibb.co/QYPqXxF/0c9bbd541df8df697b8995deda24bcd1.gif'); 
+      font-family: Arial, sans-serif;
+     background-image: url('https://i.ibb.co/QYPqXxF/0c9bbd541df8df697b8995deda24bcd1.gif'); 
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
     padding: 24px;
-  }
+      margin: 0;
+      padding: 0;
+      height: 40vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
 
     .container {
-      background-color: lightblue;
+      background-color: rgba(173, 216, 230, 0.8); /* Light blue with transparency */
       border-radius: 15px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-      padding: 50px 50px;
+      padding: 40px 30px;
       text-align: center;
-      width: 400px;
-      max-width: 100%;
-      opacity:0.7;
+      width: 100%;
+      max-width: 400px;
+      z-index: 1;
+      opacity: 0.5;
     }
 
     h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
+      font-size: 2rem;
+      margin-bottom: 15px;
       color: #333;
     }
 
     .riddle {
-      font-size: 1.2em;
-      font-weight: 500;
-      color: #444;
+      font-size: 1.2rem;
+      color: #333;
       margin-bottom: 20px;
       padding: 10px;
-      background-color: skyblue;
-      border-radius: 8px;
-      box-sizing: border-box;
+      background-color: #87CEEB; /* Sky blue */
+      border-radius: 10px;
     }
 
     .button-container {
       display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
+      gap: 10px;
+      justify-content: center;
     }
 
-    .copy-button, .fetch-button {
-      background-color: #007bff;
+    button {
+      background-color: green;
       color: white;
-      padding: 10px 20px;
-      font-size: 1em;
+      padding: 10px 15px;
+      font-size: 1rem;
       border: none;
       border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s ease;
-      width: 48%;
+      flex: 1;
     }
 
-    .copy-button:hover, .fetch-button:hover {
+    button:hover {
       background-color: #0056b3;
     }
 
-    .copy-button:active, .fetch-button:active {
+    button:active {
       background-color: #00408a;
     }
 
     .message {
-      margin-top: 10px;
-      font-size: 1em;
+      margin-top: 15px;
+      font-size: 1rem;
       color: #28a745;
     }
-
   </style>
 </head>
 <body>
+
+  <div id="particles-js"></div>
 
   <div class="container">
     <h1>Riddle of the Day</h1>
     <div id="riddle" class="riddle">Loading riddle...</div>
     <div class="button-container">
-      <button id="copyButton" class="copy-button">Copy Riddle</button>
-      <button id="fetchButton" class="fetch-button">Fetch New Riddle</button>
+      <button id="copyButton">Copy Riddle</button>
+      <button id="fetchButton">Fetch New Riddle</button>
     </div>
     <div id="message" class="message"></div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
   <script>
-    // Function to fetch the riddle from the API
+    // Particles.js configuration
+    particlesJS('particles-js', {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        shape: {
+          type: "circle",
+          stroke: { width: 0, color: "#000000" }
+        },
+        opacity: { value: 0.5, random: false },
+        size: { value: 3, random: true },
+        line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 },
+        move: {
+          enable: true,
+          speed: 3,
+          direction: "none",
+          random: false,
+          straight: false,
+          out_mode: "out",
+          bounce: false
+        }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: {
+          onhover: { enable: true, mode: "repulse" },
+          onclick: { enable: true, mode: "push" },
+          resize: true
+        },
+        modes: {
+          grab: { distance: 400, line_linked: { opacity: 1 } },
+          bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 },
+          repulse: { distance: 200, duration: 0.4 },
+          push: { particles_nb: 4 },
+          remove: { particles_nb: 2 }
+        }
+      },
+      retina_detect: true
+    });
+
+    // Function to fetch a new riddle from the API
     async function fetchRiddle() {
       try {
         const response = await fetch('https://riddles-api.vercel.app/random');
         const data = await response.json();
-        document.getElementById('riddle').textContent = data.riddle;
+        document.getElementById('riddle').textContent = data.riddle || 'No riddle found.';
+        document.getElementById('message').textContent = ''; // Clear any previous message
       } catch (error) {
-        console.error('Error fetching the riddle:', error);
         document.getElementById('riddle').textContent = 'Failed to load riddle.';
+        console.error('Error fetching riddle:', error);
       }
     }
 
-    // Function to copy the riddle to clipboard
+    // Function to copy the current riddle to the clipboard
     function copyToClipboard() {
       const riddleText = document.getElementById('riddle').textContent;
       navigator.clipboard.writeText(riddleText)
         .then(() => {
           document.getElementById('message').textContent = 'Riddle copied to clipboard!';
         })
-        .catch(err => {
-          document.getElementById('message').textContent = 'Failed to copy riddle!';
+        .catch(() => {
+          document.getElementById('message').textContent = 'Failed to copy riddle.';
         });
     }
 
-    // Event listener for the copy button
+    // Attach event listeners
     document.getElementById('copyButton').addEventListener('click', copyToClipboard);
-
-    // Event listener for the fetch new riddle button
     document.getElementById('fetchButton').addEventListener('click', fetchRiddle);
 
-    // Fetch a riddle when the page loads
+    // Load an initial riddle on page load
     fetchRiddle();
   </script>
 
